@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QFontDatabase
-from weasyprint import HTML
+from xhtml2pdf import pisa
 import platform
 
 PLATFORM:str = platform.system()
@@ -304,11 +304,17 @@ class BionicReadingApp(QWidget):
         )
         if export_path:
             content = self.text_edit.toHtml()
+
             if export_path.endswith(".html"):
                 with open(export_path, "w", encoding="utf-8") as f:
                     f.write(content)
+
             elif export_path.endswith(".pdf"):
-                HTML(string=content).write_pdf(export_path)
+                # xhtml2pdf 需要使用 pisa.pisaDocument()
+                with open(export_path, "wb") as pdf_file:
+                    pisa_status = pisa.CreatePDF(content, dest=pdf_file)
+                    if pisa_status.err:
+                        print("Error creating PDF")
 
     def toggle_theme(self):
         """
