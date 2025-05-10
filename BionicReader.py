@@ -16,40 +16,40 @@ PLATFORM:str = platform.system()
 
 def resource_path(relative_path: str) -> str:
     """
-    获取资源的绝对路径。用于访问打包后的资源文件。
+    Get the absolute path of the resource. Used to access packaged resource files.
 
-    :param relative_path: 相对路径
+    :param relative_path: relative path
 
-    :return: 绝对路径
+    :return: absolute path
     """
     base_path: str = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
 def get_bionic_reader_folder_path(folder_name: str) -> str:
     """
-    获取 BionicReader 相关资源文件夹的路径。
+    Get the path of the BionicReader related resource folder.
 
-    :param folder_name: 文件夹名称
-    :return: 文件夹路径
+    :param folder_name: folder name
+    :return: folder path
     """
     if PLATFORM == 'Windows':
         return os.path.join(os.environ.get('APPDATA', ''), 'BionicReader', folder_name)
     else:  # macOS and Linux
         return os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'BionicReader', folder_name)
 
-# 配置文件夹路径
+# Configuration folder path
 CONFIG_FOLDER_PATH: str = get_bionic_reader_folder_path('config')
 
 if not os.path.exists(CONFIG_FOLDER_PATH):
     os.makedirs(CONFIG_FOLDER_PATH)
 
-# 配置文件路径
+# Configuration file path
 CONFIG_FILE_PATH: str = os.path.join(CONFIG_FOLDER_PATH, 'config.json')
 
 def bionic_reading(text, bold_ratio=0.4):
     """
-    使用正则表达式把文本分割成【单词】与【符号/标点】。
-    对单词应用 Bionic Reading，其余符号原样保留。
+    Use regular expressions to split text into [words] and [symbols/punctuation].
+    Apply Bionic Reading to words, and keep other symbols as they are.
     """
     tokens = re.findall(r"[A-Za-z0-9]+|[^A-Za-z0-9]+", text)
     result = []
@@ -63,7 +63,7 @@ def bionic_reading(text, bold_ratio=0.4):
 
 def extract_text_from_pdf(pdf_path):
     """
-    使用 PyMuPDF 读取 PDF 并转换为字符串。
+    Use PyMuPDF to read PDF and convert to string.
     """
     doc = fitz.open(pdf_path)
     text = "\n".join(page.get_text("text") for page in doc)
@@ -85,7 +85,7 @@ class BionicReadingApp(QWidget):
 
     def init_ui(self):
         """
-        初始化用户界面。
+        Initialize the user interface.
         :return:
         """
         self.setWindowTitle("Bionic Reading 1.0.0")
@@ -93,29 +93,29 @@ class BionicReadingApp(QWidget):
 
         self.text_edit = QTextEdit()
 
-        self.load_button = QPushButton("加载 PDF / TXT")
+        self.load_button = QPushButton("Load PDF / TXT")
         self.load_button.clicked.connect(self.load_file)
 
         bold_ratio = self.config.get("bold_ratio", 40)
-        self.bold_ratio_label = QLabel(f"加粗比例 ({bold_ratio}%)")
+        self.bold_ratio_label = QLabel(f"Bold Ratio ({bold_ratio}%)")
         self.bold_ratio_slider = QSlider(Qt.Horizontal)
         self.bold_ratio_slider.setRange(10, 90)
         self.bold_ratio_slider.setValue(self.config.get("bold_ratio", 40))
         self.bold_ratio_slider.valueChanged.connect(self.update_bold_ratio)
 
-        self.font_size_label = QLabel("字号：")
+        self.font_size_label = QLabel("Font Size:")
         self.font_size_spinbox = QSpinBox()
         self.font_size_spinbox.setRange(8, 48)
         self.font_size_spinbox.setValue(self.config.get("font_size", 16))
         self.font_size_spinbox.valueChanged.connect(self.update_font_size)
 
-        self.letter_spacing_label = QLabel("字距：")
+        self.letter_spacing_label = QLabel("Letter Spacing:")
         self.letter_spacing_spinbox = QSpinBox()
         self.letter_spacing_spinbox.setRange(0, 20)
         self.letter_spacing_spinbox.setValue(self.config.get("letter_spacing", 5))
         self.letter_spacing_spinbox.valueChanged.connect(self.update_spacing)
 
-        self.line_spacing_label = QLabel("行距：")
+        self.line_spacing_label = QLabel("Line Spacing:")
         self.line_spacing_spinbox = QSpinBox()
         self.line_spacing_spinbox.setRange(10, 50)
         self.line_spacing_spinbox.setValue(self.config.get("line_spacing", 20))
@@ -125,14 +125,14 @@ class BionicReadingApp(QWidget):
         self.font_selector.currentFontChanged.connect(self.update_font)
         self.font_selector.setCurrentFont(QFont(self.config.get("font_family", "Arial")))
 
-        self.theme_switch = QCheckBox("深色模式")
+        self.theme_switch = QCheckBox("Dark Mode")
         self.theme_switch.setChecked(self.config.get("dark_mode", False))
         self.theme_switch.stateChanged.connect(self.toggle_theme)
 
-        self.refresh_button = QPushButton("刷新格式")
+        self.refresh_button = QPushButton("Refresh Format")
         self.refresh_button.clicked.connect(self.refresh_text)
 
-        self.export_button = QPushButton("导出为 HTML 或 PDF")
+        self.export_button = QPushButton("Export as HTML or PDF")
         self.export_button.clicked.connect(self.export_file)
 
         main_layout = QHBoxLayout()
@@ -145,7 +145,7 @@ class BionicReadingApp(QWidget):
         control_layout.addWidget(self.font_size_label)
         control_layout.addWidget(self.font_size_spinbox)
 
-        self.select_font_label = QLabel("字体：")
+        self.select_font_label = QLabel("Font:")
         control_layout.addWidget(self.select_font_label)
         control_layout.addWidget(self.font_selector)
 
@@ -174,8 +174,8 @@ class BionicReadingApp(QWidget):
 
     def load_config(self):
         """
-        从 JSON 文件读取配置。
-        如果文件不存在或出错，则使用默认值。
+        Read configuration from JSON file.
+        If the file does not exist or an error occurs, use default values.
         """
         if os.path.exists(self.config_file):
             try:
@@ -189,7 +189,7 @@ class BionicReadingApp(QWidget):
 
     def save_config(self):
         """
-        将当前控件值写入 JSON 文件。
+        Write current control values to JSON file.
         """
         self.config["bold_ratio"] = self.bold_ratio_slider.value()
         self.config["font_size"] = self.font_size_spinbox.value()
@@ -206,7 +206,7 @@ class BionicReadingApp(QWidget):
 
     def load_fonts(self):
         """
-        加载字体，如果加载失败则使用默认字体。
+        Load font, if loading fails, use default font.
         :return:
         """
         font_mi_path = resource_path("MiSans-Regular.otf")
@@ -221,11 +221,11 @@ class BionicReadingApp(QWidget):
 
     def load_file(self):
         """
-        加载 PDF 或 TXT 文件。
+        Load PDF or TXT file.
         :return:
         """
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "选择文件", "", "Text Files (*.txt);;PDF Files (*.pdf)"
+            self, "Select File", "", "Text Files (*.txt);;PDF Files (*.pdf)"
         )
         if file_path:
             if file_path.endswith(".pdf"):
@@ -237,7 +237,7 @@ class BionicReadingApp(QWidget):
 
     def display_bionic_text(self, text):
         """
-        显示 Bionic Reading 格式的文本。
+        Display text in Bionic Reading format.
         :param text:
         :return:
         """
@@ -255,17 +255,17 @@ class BionicReadingApp(QWidget):
 
     def update_bold_ratio(self):
         """
-        更新加粗比例。
+        Update bold ratio.
         :return:
         """
         ratio = self.bold_ratio_slider.value()
-        self.bold_ratio_label.setText(f"加粗比例 ({ratio}%)")
+        self.bold_ratio_label.setText(f"Bold Ratio ({ratio}%)")
         self.display_bionic_text(self.text_edit.toPlainText())
         self.save_config()
 
     def update_font_size(self):
         """
-        更新字号。
+        Update font size.
         :return:
         """
         self.display_bionic_text(self.text_edit.toPlainText())
@@ -273,7 +273,7 @@ class BionicReadingApp(QWidget):
 
     def update_font(self):
         """
-        更新字体。
+        Update font.
         :return:
         """
         self.display_bionic_text(self.text_edit.toPlainText())
@@ -281,7 +281,7 @@ class BionicReadingApp(QWidget):
 
     def update_spacing(self):
         """
-        更新字距或行距。
+        Update letter spacing or line spacing.
         :return:
         """
         self.display_bionic_text(self.text_edit.toPlainText())
@@ -289,18 +289,18 @@ class BionicReadingApp(QWidget):
 
     def refresh_text(self):
         """
-        刷新文本格式。
+        Refresh text format.
         :return:
         """
         self.display_bionic_text(self.text_edit.toPlainText())
 
     def export_file(self):
         """
-        导出为 HTML 或 PDF 文件。
+        Export as HTML or PDF file.
         :return:
         """
         export_path, _ = QFileDialog.getSaveFileName(
-            self, "导出文件", "", "HTML Files (*.html);;PDF Files (*.pdf)"
+            self, "Export File", "", "HTML Files (*.html);;PDF Files (*.pdf)"
         )
         if export_path:
             content = self.text_edit.toHtml()
@@ -310,7 +310,7 @@ class BionicReadingApp(QWidget):
                     f.write(content)
 
             elif export_path.endswith(".pdf"):
-                # xhtml2pdf 需要使用 pisa.pisaDocument()
+                # xhtml2pdf needs to use pisa.pisaDocument()
                 with open(export_path, "wb") as pdf_file:
                     pisa_status = pisa.CreatePDF(content, dest=pdf_file)
                     if pisa_status.err:
@@ -318,7 +318,7 @@ class BionicReadingApp(QWidget):
 
     def toggle_theme(self):
         """
-        主题切换：用户勾选/取消“深色模式”时调用
+        Theme switch: Called when the user checks/unchecks "Dark Mode"
         """
         if self.theme_switch.isChecked():
             self.apply_dark_theme()
@@ -328,13 +328,13 @@ class BionicReadingApp(QWidget):
 
     def apply_light_theme(self):
         """
-        应用浅色主题。
+        Apply light theme.
         :return:
         """
         style_sheet = """
            QWidget {
                background-color: #f0f0f0;
-           }   
+           }
            QPushButton {
                border: 2px solid #D5D5D5;  /* Dark gray border */
                border-radius: 14px;  /* Rounded corners */
@@ -354,44 +354,44 @@ class BionicReadingApp(QWidget):
            }
            QComboBox {
                 border: 2px solid #E6E6E6;
-                border-radius: 10px;       /* 圆角 */
+                border-radius: 10px;       /* Rounded corners */
                 background-color: transparent;
                 padding: 5px;
                 margin: 5px;
                 color: #4F4F4F;
             }
-            
-            /* 鼠标悬停样式 */
+
+            /* Hover style */
             QComboBox:hover {
-                border: 2px solid #2689FF;  /* 浅蓝色边框 */
-                background-color: #F9F9F9;  /* 浅灰色背景 */
+                border: 2px solid #2689FF;  /* Light blue border */
+                background-color: #F9F9F9;  /* Light gray background */
             }
-            
-            /* 下拉按钮 */
+
+            /* Drop-down button */
             QComboBox::drop-down {
                 subcontrol-origin: padding;
                 subcontrol-position: top right;
                 width: 20px;
-                border-left: 2px solid #E6E6E6; /* 分隔线 */
+                border-left: 2px solid #E6E6E6; /* Separator line */
                 background-color: transparent;
-                border-top-right-radius: 10px;  /* 圆角 */
+                border-top-right-radius: 10px;  /* Rounded corners */
                 border-bottom-right-radius: 10px;
             }
-            
-            /* 下拉箭头 */
+
+            /* Drop-down arrow */
             QComboBox::down-arrow {
-                image: url(down-arrow-light.png);  /* 替换为你的箭头图标路径 */
+                image: url(down-arrow-light.png);  /* Replace with your arrow icon path */
                 width: 10px;
                 height: 10px;
             }
-            
-            /* 下拉列表样式 */
+
+            /* Drop-down list style */
             QComboBox QAbstractItemView {
                 border: 2px solid #E6E6E6;
                 border-radius: 10px;
                 background-color: #FFFFFF;
-                selection-background-color: #2689FF;  /* 选中项背景色 */
-                selection-color: #FFFFFF;             /* 选中项文字颜色 */
+                selection-background-color: #2689FF;  /* Selected item background color */
+                selection-color: #FFFFFF;             /* Selected item text color */
             }
 
            QLineEdit{
@@ -427,7 +427,7 @@ class BionicReadingApp(QWidget):
            QTextEdit:hover {
                border: 2px solid #B0B0B0;
            }
-           /* 垂直滚动条样式 */
+           /* Vertical scrollbar style */
                QScrollBar:vertical {
                    background: transparent;
                    width: 10px;
@@ -450,7 +450,7 @@ class BionicReadingApp(QWidget):
                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
                    background: none;
                }
-               /* 水平滚动条样式 */
+               /* Horizontal scrollbar style */
                QScrollBar:horizontal {
                    background: transparent;
                    height: 10px;
@@ -561,90 +561,90 @@ class BionicReadingApp(QWidget):
            }
 
            QSpinBox {
-               color: #4F4F4F; /* 深色文本 */
-               border: 2px solid #E6E6E6; /* 边框颜色 */
-               border-radius: 5px; /* 圆角 */
-               padding: 2px; /* 内边距 */
-               background-color: transparent; /* 背景色 */
+               color: #4F4F4F; /* Dark text */
+               border: 2px solid #E6E6E6; /* Border color */
+               border-radius: 5px; /* Rounded corners */
+               padding: 2px; /* Padding */
+               background-color: transparent; /* Background color */
            }
 
            QSpinBox:hover {
-               border: 2px solid #2689FF; /* 悬停时边框颜色 */
+               border: 2px solid #2689FF; /* Border color on hover */
            }
 
            QSpinBox:focus {
-               border: 2px solid #0053B7; /* 聚焦时边框颜色 */
-               background-color: #efefef; /* 聚焦时背景色 */
+               border: 2px solid #0053B7; /* Border color on focus */
+               background-color: #efefef; /* Background color on focus */
            }
 
-           /* 上按钮样式 */
+           /* Up button style */
            QSpinBox::up-button {
-               background-color: #E0E0E0; /* 按钮背景色 */
-               border: none; /* 无边框 */
-               border-top-right-radius: 4px; /* 上按钮圆角 */
-               width: 15px; /* 按钮宽度 */
+               background-color: #E0E0E0; /* Button background color */
+               border: none; /* No border */
+               border-top-right-radius: 4px; /* Up button rounded corners */
+               width: 15px; /* Button width */
            }
 
            QSpinBox::up-button:hover {
-               background-color: #D0D0D0; /* 悬停时按钮背景色 */
+               background-color: #D0D0D0; /* Button background color on hover */
            }
 
            QSpinBox::up-button:pressed {
-               background-color: #C0C0C0; /* 按下时按钮背景色 */
+               background-color: #C0C0C0; /* Button background color on press */
            }
 
-           /* 下按钮样式 */
+           /* Down button style */
            QSpinBox::down-button {
-               background-color: #E0E0E0; /* 按钮背景色 */
-               border: none; /* 无边框 */
-               border-bottom-right-radius: 4px; /* 下按钮圆角 */
-               width: 15px; /* 按钮宽度 */
+               background-color: #E0E0E0; /* Button background color */
+               border: none; /* No border */
+               border-bottom-right-radius: 4px; /* Down button rounded corners */
+               width: 15px; /* Button width */
            }
 
            QSpinBox::down-button:hover {
-               background-color: #D0D0D0; /* 悬停时按钮背景色 */
+               background-color: #D0D0D0; /* Button background color on hover */
            }
 
            QSpinBox::down-button:pressed {
-               background-color: #C0C0C0; /* 按下时按钮背景色 */
+               background-color: #C0C0C0; /* Button background color on press */
            }
 
-           /* 箭头样式 */
+           /* Arrow style */
            QSpinBox::up-arrow {
-               width: 8px; /* 箭头宽度 */
-               height: 8px; /* 箭头高度 */
-               image: url(up-arrow-light.png); /* 自定义上箭头图片 */
+               width: 8px; /* Arrow width */
+               height: 8px; /* Arrow height */
+               image: url(up-arrow-light.png); /* Custom up arrow image */
            }
 
            QSpinBox::up-arrow:hover {
-               width: 9px; /* 悬停时箭头大小 */
+               width: 9px; /* Arrow size on hover */
                height: 9px;
            }
 
            QSpinBox::down-arrow {
-               width: 8px; /* 箭头宽度 */
-               height: 8px; /* 箭头高度 */
-               image: url(down-arrow-light.png); /* 自定义下箭头图片 */
+               width: 8px; /* Arrow width */
+               height: 8px; /* Arrow height */
+               image: url(down-arrow-light.png); /* Custom down arrow image */
            }
 
            QSpinBox::down-arrow:hover {
-               width: 9px; /* 悬停时箭头大小 */
+               width: 9px; /* Arrow size on hover */
                height: 9px;
            }
 
-           /* 禁用状态 */
+           /* Disabled state */
            QSpinBox:disabled {
-               background-color: #F0F0F0; /* 禁用时背景色 */
-               color: #A0A0A0; /* 禁用时文本颜色 */
-               border: 2px solid #D0D0D0; /* 禁用时边框颜色 */
+               background-color: #F0F0F0; /* Background color when disabled */
+               color: #A0A0A0; /* Text color when disabled */
+               border: 2px solid #D0D0D0; /* Border color when disabled */
            }
 
            QSpinBox::up-button:disabled, QSpinBox::down-button:disabled {
-               background-color: #E0E0E0; /* 禁用时按钮背景色 */
+               background-color: #E0E0E0; /* Button background color when disabled */
            }
 
            QSpinBox::up-arrow:disabled, QSpinBox::down-arrow:disabled {
-               image: url(disabled-arrow-light.png); /* 禁用时箭头图片 */
+               image: url(disabled-arrow-light.png); /* Arrow image when disabled */
            }
 
            """
@@ -653,7 +653,7 @@ class BionicReadingApp(QWidget):
 
     def apply_dark_theme(self):
         """
-        应用深色主题。
+        Apply dark theme.
         :return:
         """
         style_sheet = """
@@ -679,7 +679,7 @@ class BionicReadingApp(QWidget):
            QPushButton:pressed {
                background-color: #5A5A5A;  /* Slightly darker on press */
            }
-          
+
 
            QLineEdit{
                border: 2px solid #4A4A4A; /* Dark gray border */
@@ -755,7 +755,7 @@ class BionicReadingApp(QWidget):
                color: #D9D9D9;  /* Light gray text color */
 
            }
-           /* 垂直滚动条样式 */
+           /* Vertical scrollbar style */
                QScrollBar:vertical {
                    background: #2E2E2E;
                    width: 10px;
@@ -779,7 +779,7 @@ class BionicReadingApp(QWidget):
                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
                    background: none;
                }
-               /* 水平滚动条样式 */
+               /* Horizontal scrollbar style */
                QScrollBar:horizontal {
                    background: #2E2E2E;
                    height: 10px;
@@ -863,11 +863,11 @@ class BionicReadingApp(QWidget):
                background-color: #3A3A3A;  /* Slight highlight on selection */
            }
            QPushButton[text="OK"] {
-               background-color: #2689FF; /* 按钮背景色 */
-               color: #FFFFFF; /* 按钮文本颜色 */
-               border: 2px solid #0053B7; /* 边框颜色 */
-               border-radius: 6px; /* 圆角 */
-               padding: 5px 10px; /* 内边距 */
+               background-color: #2689FF; /* Button background color */
+               color: #FFFFFF; /* Button text color */
+               border: 2px solid #0053B7; /* Border color */
+               border-radius: 6px; /* Rounded corners */
+               padding: 5px 10px; /* Padding */
            }
            QPushButton[text="Cancel"] {
                border-radius: 14px;  /* Rounded corners */
@@ -891,51 +891,51 @@ class BionicReadingApp(QWidget):
                    background-color: #004299;  /* Dark blue on press */
            }
            QSpinBox {
-               background-color: #2E2E2E; /* 深色背景 */
-               color: #D9D9D9; /* 文本颜色 */
-               border: 2px solid #4A4A4A; /* 边框颜色 */
-               border-radius: 5px; /* 圆角 */
-               padding: 2px; /* 内边距 */
+               background-color: #2E2E2E; /* Dark background */
+               color: #D9D9D9; /* Text color */
+               border: 2px solid #4A4A4A; /* Border color */
+               border-radius: 5px; /* Rounded corners */
+               padding: 2px; /* Padding */
            }
 
            QSpinBox:hover {
-               border: 2px solid #2689FF; /* 悬停时边框颜色 */
+               border: 2px solid #2689FF; /* Border color on hover */
            }
 
            QSpinBox:focus {
-               border: 2px solid #0053B7; /* 聚焦时边框颜色 */
+               border: 2px solid #0053B7; /* Border color on focus */
            }
 
-           /* 上按钮样式 */
+           /* Up button style */
            QSpinBox::up-button {
-               background-color: #4A4A4A; /* 按钮背景色 */
-               border: none; /* 无边框 */
-               border-top-right-radius: 4px; /* 上按钮圆角 */
-               width: 15px; /* 按钮宽度 */
+               background-color: #4A4A4A; /* Button background color */
+               border: none; /* No border */
+               border-top-right-radius: 4px; /* Up button rounded corners */
+               width: 15px; /* Button width */
            }
 
            QSpinBox::up-button:hover {
-               background-color: #5A5A5A; /* 悬停时按钮背景色 */
+               background-color: #5A5A5A; /* Button background color on hover */
            }
 
            QSpinBox::up-button:pressed {
-               background-color: #3A3A3A; /* 按下时按钮背景色 */
+               background-color: #3A3A3A; /* Button background color on press */
            }
 
-           /* 下按钮样式 */
+           /* Down button style */
            QSpinBox::down-button {
-               background-color: #4A4A4A; /* 按钮背景色 */
-               border: none; /* 无边框 */
-               border-bottom-right-radius: 4px; /* 下按钮圆角 */
-               width: 15px; /* 按钮宽度 */
+               background-color: #4A4A4A; /* Button background color */
+               border: none; /* No border */
+               border-bottom-right-radius: 4px; /* Down button rounded corners */
+               width: 15px; /* Button width */
            }
 
            QSpinBox::down-button:hover {
-               background-color: #5A5A5A; /* 悬停时按钮背景色 */
+               background-color: #5A5A5A; /* Button background color on hover */
            }
 
            QSpinBox::down-button:pressed {
-               background-color: #3A3A3A; /* 按下时按钮背景色 */
+               background-color: #3A3A3A; /* Button background color on press */
            }
 
            """
