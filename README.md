@@ -47,7 +47,7 @@ It also **persists user settings in a JSON** file, so each time you start the ap
 
 Example:
 ```bash
-pip install PySide6 PyMuPDF weasyprint fitz 
+pip install PySide6 PyMuPDF weasyprint frontend tools xhtml2pdf
 ```
 
 ---
@@ -59,7 +59,7 @@ pip install PySide6 PyMuPDF weasyprint fitz
 3. **Install** dependencies (PySide6, PyMuPDF, weasyprint).
 4. **Run** the Python script:
    ```bash
-   python bionic_reading_app.py
+   python BionicReader.py
    ```
 5. On first run, the app creates (or reads) a `config.json` file in the same directory, storing your preferences.
 
